@@ -1,0 +1,38 @@
+[project]
+name = "b4cklog"
+version = "0.1.0"
+description = "Playstyle-based Steam game recommender"
+requires-python = ">=3.12"
+# Floors are the versions verified together on CPython 3.14 (Windows); they
+# document the known-good baseline without hard-pinning. Bump deliberately.
+dependencies = [
+    "fastapi>=0.141",
+    "uvicorn[standard]>=0.52",
+    "jinja2>=3.1",
+    "httpx>=0.28",
+    "numpy>=2.5",
+    "pandas>=3.0",
+    "scikit-learn>=1.9",
+    "python-dotenv>=1.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = [
+    "b4cklog",
+    "b4cklog.steam",
+    "b4cklog.behaviour",
+    "b4cklog.placement",
+    "b4cklog.recommend",
+    "b4cklog.web",
+    "pipeline",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

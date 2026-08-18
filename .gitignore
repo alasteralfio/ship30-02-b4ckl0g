@@ -12,9 +12,13 @@ out/
 .env.local
 .env.*.local
 
+# Reference data — built by pipeline/, read by the app (SQLite DB + model artifact)
+data/
+
 # Python
 __pycache__/
 *.py[cod]
+*.egg-info/
 .venv/
 venv/
 .pytest_cache/
@@ -44,3 +48,5 @@ Thumbs.db
 # Agent tooling / internal docs
 .claude
 CLAUDE.md
+ROADMAP.md
+time_spent.md
