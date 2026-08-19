@@ -1,0 +1,18 @@
+{
+  "response": {
+    "players": [
+      {
+        "steamid": "76561197960287930",
+        "communityvisibilitystate": 2,
+        "profilestate": 1,
+        "personaname": "Rabscuttle",
+        "profileurl": "https://steamcommunity.com/id/GabeLoganNewell/",
+        "avatar": "https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5426.jpg",
+        "avatarmedium": "https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5426_medium.jpg",
+        "avatarfull": "https://avatars.steamstatic.com/c5d56249ee5d28a07db4ac9f7f60af961fab5426_full.jpg",
+        "avatarhash": "c5d56249ee5d28a07db4ac9f7f60af961fab5426",
+        "personastate": 0
+      }
+    ]
+  }
+}

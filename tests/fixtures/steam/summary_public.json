@@ -1,0 +1,26 @@
+{
+  "response": {
+    "players": [
+      {
+        "steamid": "76561197960434622",
+        "communityvisibilitystate": 3,
+        "profilestate": 1,
+        "personaname": "al",
+        "commentpermission": 1,
+        "profileurl": "https://steamcommunity.com/id/afarnsworth/",
+        "avatar": "https://avatars.steamstatic.com/fdaef0111714471445bb422b8021d3a887c86a99.jpg",
+        "avatarmedium": "https://avatars.steamstatic.com/fdaef0111714471445bb422b8021d3a887c86a99_medium.jpg",
+        "avatarfull": "https://avatars.steamstatic.com/fdaef0111714471445bb422b8021d3a887c86a99_full.jpg",
+        "avatarhash": "fdaef0111714471445bb422b8021d3a887c86a99",
+        "personastate": 3,
+        "realname": "Al Farnsworth",
+        "primaryclanid": "103582791434277245",
+        "timecreated": 1063407206,
+        "personastateflags": 0,
+        "loccountrycode": "US",
+        "locstatecode": "WA",
+        "loccityid": 3961
+      }
+    ]
+  }
+}

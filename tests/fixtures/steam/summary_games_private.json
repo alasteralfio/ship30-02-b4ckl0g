@@ -1,0 +1,22 @@
+{
+  "response": {
+    "players": [
+      {
+        "steamid": "76561197972495328",
+        "communityvisibilitystate": 3,
+        "profilestate": 1,
+        "personaname": "Spitko",
+        "profileurl": "https://steamcommunity.com/id/FireSlash/",
+        "avatar": "https://avatars.steamstatic.com/e9e6013d2df1ac9115066c5d9fe20b4a322fac16.jpg",
+        "avatarmedium": "https://avatars.steamstatic.com/e9e6013d2df1ac9115066c5d9fe20b4a322fac16_medium.jpg",
+        "avatarfull": "https://avatars.steamstatic.com/e9e6013d2df1ac9115066c5d9fe20b4a322fac16_full.jpg",
+        "avatarhash": "e9e6013d2df1ac9115066c5d9fe20b4a322fac16",
+        "personastate": 0,
+        "realname": "FireSlash",
+        "primaryclanid": "103582791430059237",
+        "timecreated": 1104187690,
+        "personastateflags": 0
+      }
+    ]
+  }
+}

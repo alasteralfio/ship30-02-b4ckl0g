@@ -1,0 +1,219 @@
+{
+  "playerstats": {
+    "steamID": "76561197960434622",
+    "gameName": "ELDEN RING",
+    "achievements": [
+      {
+        "apiname": "ACH00",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH01",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH02",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH03",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH04",
+        "achieved": 1,
+        "unlocktime": 1646610369
+      },
+      {
+        "apiname": "ACH05",
+        "achieved": 1,
+        "unlocktime": 1648442957
+      },
+      {
+        "apiname": "ACH06",
+        "achieved": 1,
+        "unlocktime": 1649872353
+      },
+      {
+        "apiname": "ACH07",
+        "achieved": 1,
+        "unlocktime": 1650139231
+      },
+      {
+        "apiname": "ACH08",
+        "achieved": 1,
+        "unlocktime": 1653624640
+      },
+      {
+        "apiname": "ACH09",
+        "achieved": 1,
+        "unlocktime": 1653192155
+      },
+      {
+        "apiname": "ACH10",
+        "achieved": 1,
+        "unlocktime": 1653281386
+      },
+      {
+        "apiname": "ACH11",
+        "achieved": 1,
+        "unlocktime": 1653454513
+      },
+      {
+        "apiname": "ACH12",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH13",
+        "achieved": 1,
+        "unlocktime": 1650845472
+      },
+      {
+        "apiname": "ACH14",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH15",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH16",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH17",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH18",
+        "achieved": 1,
+        "unlocktime": 1647203005
+      },
+      {
+        "apiname": "ACH19",
+        "achieved": 0,
+        "unlocktime": 0
+      },
+      {
+        "apiname": "ACH20",
+        "achieved": 1,
+        "unlocktime": 1651435225
+      },
+      {
+        "apiname": "ACH21",
+        "achieved": 1,
+        "unlocktime": 1650771545
+      },
+      {
+        "apiname": "ACH22",
+        "achieved": 1,
+        "unlocktime": 1647789641
+      },
+      {
+        "apiname": "ACH23",
+        "achieved": 1,
+        "unlocktime": 1650947631
+      },
+      {
+        "apiname": "ACH24",
+        "achieved": 1,
+        "unlocktime": 1650845825
+      },
+      {
+        "apiname": "ACH25",
+        "achieved": 1,
+        "unlocktime": 1645922505
+      },
+      {
+        "apiname": "ACH26",
+        "achieved": 1,
+        "unlocktime": 1647143954
+      },
+      {
+        "apiname": "ACH27",
+        "achieved": 1,
+        "unlocktime": 1650074968
+      },
+      {
+        "apiname": "ACH28",
+        "achieved": 1,
+        "unlocktime": 1647376411
+      },
+      {
+        "apiname": "ACH29",
+        "achieved": 1,
+        "unlocktime": 1649830247
+      },
+      {
+        "apiname": "ACH30",
+        "achieved": 1,
+        "unlocktime": 1649828274
+      },
+      {
+        "apiname": "ACH31",
+        "achieved": 1,
+        "unlocktime": 1648922971
+      },
+      {
+        "apiname": "ACH32",
+        "achieved": 1,
+        "unlocktime": 1653243849
+      },
+      {
+        "apiname": "ACH33",
+        "achieved": 1,
+        "unlocktime": 1650832175
+      },
+      {
+        "apiname": "ACH34",
+        "achieved": 1,
+        "unlocktime": 1647971765
+      },
+      {
+        "apiname": "ACH35",
+        "achieved": 1,
+        "unlocktime": 1647228672
+      },
+      {
+        "apiname": "ACH36",
+        "achieved": 1,
+        "unlocktime": 1652054633
+      },
+      {
+        "apiname": "ACH37",
+        "achieved": 1,
+        "unlocktime": 1647800734
+      },
+      {
+        "apiname": "ACH38",
+        "achieved": 1,
+        "unlocktime": 1650753286
+      },
+      {
+        "apiname": "ACH39",
+        "achieved": 1,
+        "unlocktime": 1645764206
+      },
+      {
+        "apiname": "ACH40",
+        "achieved": 1,
+        "unlocktime": 1647203005
+      },
+      {
+        "apiname": "ACH41",
+        "achieved": 1,
+        "unlocktime": 1650772213
+      }
+    ],
+    "success": true
+  }
+}
