@@ -11,6 +11,7 @@ message instead of a crash. It reads and prints only — nothing is persisted.
 import asyncio
 import sys
 
+from b4cklog.behaviour import reduce_to_behaviour
 from b4cklog.config import steam_api_key
 from b4cklog.steam import Library, PrivateProfile, SteamClient, UnknownSteamID
 
@@ -40,6 +41,17 @@ async def _read(steam_id: str) -> None:
         for app_id, s in sorted(stats.items(), key=lambda kv: -kv[1].completion_rate):
             name = by_playtime.get(app_id, str(app_id))
             print(f"  {s.completion_rate:5.0%}  {s.unlocked}/{s.total}  {name}")
+
+        behaviour = reduce_to_behaviour(result, stats)
+        print("\nBehaviour (the three axes):")
+        print(f"  depth <-> breadth       {behaviour.depth_breadth:+.2f}   (higher = broader)")
+        print(f"  completion drive        {behaviour.completion_drive:.0%}")
+        print(f"  commitment consistency  {behaviour.commitment_consistency:.0%}   (higher = more even)")
+        shape = behaviour.shape
+        print(
+            f"  library shape: {shape['games_played']}/{shape['games_owned']} played"
+            f" ({shape['played_fraction']:.0%}), bimodality {shape['bimodality']:.2f}"
+        )
 
 
 def main() -> None:

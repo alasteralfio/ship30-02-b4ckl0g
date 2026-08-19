@@ -1,1 +1,5 @@
-"""Reduce raw player data to the three axes and library-shape features."""
+"""Raw player data reduced to the three behavioural axes and library shape."""
+
+from .reduce import Behaviour, reduce_to_behaviour
+
+__all__ = ["Behaviour", "reduce_to_behaviour"]
