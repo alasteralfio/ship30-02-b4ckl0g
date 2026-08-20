@@ -7,10 +7,23 @@ build/
 .next/
 out/
 
-# Env
+# Env & secrets — never commit real credentials
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa
+id_ed25519
+.netrc
+.npmrc
+credentials.json
+secrets.json
+service-account*.json
 
 # Reference data — built by pipeline/, read by the app (SQLite DB + model artifact)
 data/

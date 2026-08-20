@@ -158,6 +158,18 @@ def get_seed_profile(conn: sqlite3.Connection, steam_id: str) -> dict | None:
     return profile
 
 
+def all_seed_profiles(conn: sqlite3.Connection) -> list[dict]:
+    """Every seed profile, shape features parsed. The whole reference crowd —
+    read by the diversity summary now and the placement fit in Phase 4."""
+    rows = conn.execute("SELECT * FROM seed_profiles").fetchall()
+    profiles = []
+    for row in rows:
+        profile = dict(row)
+        profile["shape_features"] = json.loads(profile["shape_features"])
+        profiles.append(profile)
+    return profiles
+
+
 def replace_seed_playtimes(
     conn: sqlite3.Connection, steam_id: str, minutes_by_app: dict[int, int]
 ) -> None:
