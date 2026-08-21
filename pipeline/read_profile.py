@@ -5,7 +5,10 @@ Run:  python -m pipeline.read_profile <steam_id>   [needs STEAM_API_KEY in .env]
 It's the manual check behind Checkpoint 3: point it at a public account and see
 the library size, the top games by playtime, and the achievement pulls for the
 most-played handful; point it at a private one and see the honest can't-read
-message instead of a crash. It reads and prints only — nothing is persisted.
+message instead of a crash. It's also the check behind Checkpoint 6: once
+`data/placement_model.pkl` exists (`python -m pipeline.fit_placement`), it
+places the profile too and prints the soft label and subdivision. It reads and
+prints only — nothing is persisted.
 """
 
 import asyncio
@@ -13,6 +16,7 @@ import sys
 
 from b4cklog.behaviour import reduce_to_behaviour
 from b4cklog.config import steam_api_key
+from b4cklog.placement import load, place
 from b4cklog.steam import Library, PrivateProfile, SteamClient, UnknownSteamID
 
 
@@ -52,6 +56,23 @@ async def _read(steam_id: str) -> None:
             f"  library shape: {shape['games_played']}/{shape['games_owned']} played"
             f" ({shape['played_fraction']:.0%}), bimodality {shape['bimodality']:.2f}"
         )
+
+        try:
+            model = load()
+        except FileNotFoundError as e:
+            print(f"\n{e}")
+            return
+
+        placement = place(model, behaviour)
+        print(f"\nPlacement: {placement.soft_label}")
+        print("  membership:", ", ".join(
+            f"{name} {prob:.0%}"
+            for name, prob in sorted(placement.responsibilities.items(), key=lambda kv: -kv[1])
+        ))
+        if placement.subdivision is not None:
+            sub = placement.subdivision
+            hedge = "" if sub.confident else "  (not confident yet)"
+            print(f"  subdivision: {sub.name}{hedge} — {sub.detail}")
 
 
 def main() -> None:
