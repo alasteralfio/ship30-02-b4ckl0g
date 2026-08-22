@@ -259,6 +259,83 @@ def test_persistent_rate_limit_raises_without_leaking_key(monkeypatch):
     assert "super-secret-key" not in str(exc.value)
 
 
+def test_transient_server_error_is_retried_then_succeeds(monkeypatch):
+    # A real crawl hit an uncaught 502 that crashed the process with the key
+    # in the traceback (httpx.HTTPStatusError embeds the full URL). 502/503/504
+    # now get the same retry-then-scrub treatment as 420/429.
+    _no_sleep(monkeypatch)
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        if calls["n"] <= 2:
+            return httpx.Response(502, text="bad gateway")
+        return httpx.Response(200, json={"response": {"players": []}})
+
+    client = _client(handler)
+    result = asyncio.run(client.get_player_summaries(["1"]))
+    assert result == []
+    assert calls["n"] == 3
+
+
+def test_persistent_server_error_raises_without_leaking_key(monkeypatch):
+    _no_sleep(monkeypatch)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(502, text="bad gateway")
+
+    client = SteamClient(
+        "super-secret-key",
+        client=httpx.AsyncClient(
+            transport=httpx.MockTransport(handler),
+            base_url="https://api.steampowered.com",
+        ),
+    )
+    with pytest.raises(SteamError) as exc:
+        asyncio.run(client.get_player_summaries(["1"]))
+    assert "super-secret-key" not in str(exc.value)
+
+
+def test_transport_failure_is_retried_then_raises_without_leaking_key(monkeypatch):
+    # A connection-level failure (no HTTP response at all) must be retried like
+    # any other transient error, and never let httpx's own exception — which
+    # can carry the request, key included — escape uncaught.
+    _no_sleep(monkeypatch)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("connection reset", request=request)
+
+    client = SteamClient(
+        "super-secret-key",
+        client=httpx.AsyncClient(
+            transport=httpx.MockTransport(handler),
+            base_url="https://api.steampowered.com",
+        ),
+    )
+    with pytest.raises(SteamError) as exc:
+        asyncio.run(client.get_player_summaries(["1"]))
+    assert "super-secret-key" not in str(exc.value)
+
+
+def test_non_retryable_error_status_raises_without_leaking_key():
+    # Any other non-2xx (e.g. a malformed request) must go through
+    # `_raise_for_status`, not a bare `raise_for_status()` that would embed
+    # the key-bearing URL in the exception message.
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(400, text="bad request")
+
+    client = SteamClient(
+        "super-secret-key",
+        client=httpx.AsyncClient(
+            transport=httpx.MockTransport(handler),
+            base_url="https://api.steampowered.com",
+        ),
+    )
+    with pytest.raises(SteamError) as exc:
+        asyncio.run(client.get_player_summaries(["1"]))
+    assert "super-secret-key" not in str(exc.value)
+
+
 # --- batched summaries: the seed sourcer's cheap visibility filter ---
 
 def test_get_player_summaries_chunks_and_drops_unknown_ids():

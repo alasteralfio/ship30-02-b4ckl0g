@@ -247,6 +247,34 @@ def test_sustained_rate_limit_aborts_without_crashing(monkeypatch):
     assert run.rate_limited > 0
 
 
+def test_transient_server_errors_do_not_crash_the_run(monkeypatch):
+    # The real incident this guards against: an uncaught 502 from Steam
+    # crashed a live sourcing run partway through, leaking the API key into
+    # the crash traceback (httpx.HTTPStatusError embeds the full request URL;
+    # fixed at the source in SteamClient._get). Owned-games always 502s here;
+    # the run must survive it — abort gracefully, not crash the process.
+    async def instant(_seconds):
+        return None
+
+    monkeypatch.setattr(asyncio, "sleep", instant)
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("GetPlayerSummaries/v2/"):
+            players = [
+                {"steamid": sid, "personaname": None, "communityvisibilitystate": 3}
+                for sid in request.url.params["steamids"].split(",")
+            ]
+            return httpx.Response(200, json={"response": {"players": players}})
+        return httpx.Response(502, text="bad gateway")  # every owned-games call
+
+    run = asyncio.run(
+        run_sourcing(_client(handler), target=12, rng=random.Random(1), max_candidates=100_000)
+    )
+    assert run.rate_limit_aborted
+    assert run.stopped_early
+    assert run.accepted == []
+
+
 def test_games_hidden_profiles_are_counted_not_accepted():
     # Force a batch of IDs whose games are all hidden; none may be accepted, and
     # the run must give up at the candidate ceiling rather than loop forever.

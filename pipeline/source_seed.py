@@ -38,6 +38,8 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import httpx
+
 from b4cklog.config import steam_api_key
 from b4cklog.steam import OwnedGame, SteamClient, SteamError
 
@@ -265,9 +267,10 @@ async def source_seed(
 
         try:
             summaries = await client.get_player_summaries(candidates)
-        except SteamError:
-            # The batch's one visibility call was rate-limited: nothing to show
-            # for it. Count it dead and move on.
+        except (SteamError, httpx.HTTPError):
+            # The batch's one visibility call failed (rate-limited or a
+            # transient error the client's own retries didn't clear): nothing
+            # to show for it. Count it dead and move on.
             run.rate_limited += 1
             dead_batches += 1
         else:
@@ -288,7 +291,11 @@ async def source_seed(
                         return steam_id, None, False
                     try:
                         return steam_id, await client.owned_games(steam_id), True
-                    except SteamError:
+                    except (SteamError, httpx.HTTPError):
+                        # SteamError covers everything the client itself raises
+                        # (it never lets a raw httpx error escape — see
+                        # client.py's `_get`); httpx.HTTPError is caught too as
+                        # a second line of defense, matching crawl_seed.py.
                         fails += 1
                         return steam_id, None, False
 

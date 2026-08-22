@@ -48,13 +48,16 @@ DEFAULT_CONCURRENCY = 5
 _SUMMARIES_PER_CALL = 100
 
 # Steam answers a burst over its rate limit with HTTP 420/429 rather than serving
-# the call. The seed crawl makes thousands of calls, so this is expected, not
-# exceptional: back off and retry a bounded number of times, then give up with a
-# clear error. Delay doubles each attempt from the base (1s, 2s, 4s, …).
+# the call, and occasionally drops a call to a transient 502/503/504 under
+# sustained crawl load. Both are expected on a long run, not exceptional: back
+# off and retry a bounded number of times, then give up with a clear error.
+# Delay doubles each attempt from the base (1s, 2s, 4s, …).
 _RATE_LIMIT_STATUSES = (420, 429)
-# Back off through a transient limit (1, 2, 4, 8, 16s ≈ 31s total) then give up.
-# Not longer: when Steam is in a real cooldown the call will keep failing for
-# minutes, and waiting that out per call would make a throttled bulk run crawl.
+_TRANSIENT_SERVER_STATUSES = (502, 503, 504)
+_RETRYABLE_STATUSES = _RATE_LIMIT_STATUSES + _TRANSIENT_SERVER_STATUSES
+# Back off through a transient failure (1, 2, 4, 8, 16s ≈ 31s total) then give
+# up. Not longer: when Steam is in a real cooldown or outage the call will keep
+# failing for minutes, and waiting that out per call would stall a bulk run.
 # Riding out a longer outage is the resume mechanism's job, not one call's.
 _MAX_RATE_LIMIT_RETRIES = 5
 _RATE_LIMIT_BASE_DELAY = 1.0
@@ -111,27 +114,60 @@ class SteamClient:
             await self._client.aclose()
 
     async def _get(self, path: str, params: dict) -> httpx.Response:
-        """GET a Steam endpoint, backing off through rate-limit responses.
+        """GET a Steam endpoint, backing off through rate-limit and transient
+        server-error responses.
 
-        On 420/429 it waits and retries; on giving up it raises a SteamError
-        that names the endpoint but never the key — the key rides in the query
-        string, so letting httpx's own error propagate would leak it into logs.
-        Other statuses pass straight back for the caller to handle.
+        On 420/429/502/503/504 it waits and retries; on giving up, or on a
+        transport-level failure (timeout, connection reset), it raises a
+        SteamError that names the endpoint and status but never the key. This
+        is load-bearing, not cosmetic: the key rides in the query string
+        (`_client.get(path, params={..., "key": self._key})` below), so
+        letting httpx's own exception propagate — `HTTPStatusError` embeds the
+        full request URL in its message — leaks the key into any log or
+        traceback that captures it. That happened for real during a Phase 4
+        seed-sourcing run (an uncaught 502 crashed the process with the key in
+        the traceback); every non-2xx path is now funneled through here or
+        `_raise_for_status` so it can't happen through a status code we didn't
+        think to test. Other statuses pass straight back for the caller to
+        handle explicitly (e.g. achievement calls treat 400/403/5xx as "no
+        signal for this game", not an error).
         """
         for attempt in range(_MAX_RATE_LIMIT_RETRIES + 1):
             await self._await_throttle()
-            response = await self._client.get(
-                path, params={**params, "key": self._key}
-            )
-            if response.status_code not in _RATE_LIMIT_STATUSES:
+            try:
+                response = await self._client.get(
+                    path, params={**params, "key": self._key}
+                )
+            except httpx.HTTPError as e:
+                if attempt == _MAX_RATE_LIMIT_RETRIES:
+                    raise SteamError(
+                        f"{path} failed after {_MAX_RATE_LIMIT_RETRIES} retries: "
+                        f"{type(e).__name__}."
+                    ) from None
+                await asyncio.sleep(_RATE_LIMIT_BASE_DELAY * 2**attempt)
+                continue
+            if response.status_code not in _RETRYABLE_STATUSES:
                 return response
             if attempt == _MAX_RATE_LIMIT_RETRIES:
                 raise SteamError(
-                    f"Steam rate-limited {path} (HTTP {response.status_code}); "
+                    f"Steam kept failing {path} (HTTP {response.status_code}); "
                     f"backed off {_MAX_RATE_LIMIT_RETRIES} times and gave up."
                 )
             await asyncio.sleep(_RATE_LIMIT_BASE_DELAY * 2**attempt)
         raise AssertionError("unreachable")  # loop returns or raises
+
+    def _raise_for_status(self, response: httpx.Response, path: str) -> None:
+        """Raise a key-safe SteamError for a non-2xx response.
+
+        Used instead of `httpx.Response.raise_for_status()`, whose
+        `HTTPStatusError` embeds the full request URL — key included — in its
+        message (see `_get`'s docstring). Every direct status check a caller
+        does before this point (achievement calls treating 400/403/5xx as "no
+        signal") still runs first; this only covers what's left over.
+        """
+        if response.is_success:
+            return
+        raise SteamError(f"Steam returned HTTP {response.status_code} for {path}.")
 
     async def _await_throttle(self) -> None:
         """Block until this request's turn, spacing starts by the throttle interval.
@@ -161,10 +197,9 @@ class SteamClient:
         """
         summaries: list[PlayerSummary] = []
         for chunk in _chunked(steam_ids, _SUMMARIES_PER_CALL):
-            r = await self._get(
-                "/ISteamUser/GetPlayerSummaries/v2/", {"steamids": ",".join(chunk)}
-            )
-            r.raise_for_status()
+            path = "/ISteamUser/GetPlayerSummaries/v2/"
+            r = await self._get(path, {"steamids": ",".join(chunk)})
+            self._raise_for_status(r, path)
             for p in r.json()["response"]["players"]:
                 summaries.append(
                     PlayerSummary(
@@ -208,11 +243,12 @@ class SteamClient:
         object (no `games` key) rather than an error, so the absence of the key
         is the signal, not a status code.
         """
+        path = "/IPlayerService/GetOwnedGames/v1/"
         r = await self._get(
-            "/IPlayerService/GetOwnedGames/v1/",
+            path,
             {"steamid": steam_id, "include_appinfo": 1, "include_played_free_games": 1},
         )
-        r.raise_for_status()
+        self._raise_for_status(r, path)
         resp = r.json()["response"]
         if "games" not in resp:
             return None
@@ -238,13 +274,11 @@ class SteamClient:
         works from whatever games did report (Goal 2.2), rather than one quirky
         app aborting a whole profile's crawl.
         """
-        r = await self._get(
-            "/ISteamUserStats/GetPlayerAchievements/v1/",
-            {"steamid": steam_id, "appid": app_id},
-        )
+        path = "/ISteamUserStats/GetPlayerAchievements/v1/"
+        r = await self._get(path, {"steamid": steam_id, "appid": app_id})
         if r.status_code in (400, 403) or r.status_code >= 500:
             return None
-        r.raise_for_status()
+        self._raise_for_status(r, path)
         stats = r.json()["playerstats"]
         achievements = stats.get("achievements")
         if not stats.get("success") or not achievements:

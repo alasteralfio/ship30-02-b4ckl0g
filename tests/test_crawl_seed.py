@@ -141,7 +141,12 @@ def test_http_error_skips_one_profile_and_keeps_going(tmp_path):
     assert store.get_seed_profile(conn, PUBLIC) is not None
     logged = [json.loads(line) for line in skip_log.read_text().splitlines()]
     assert logged[0]["steam_id"] == "bad"
-    assert logged[0]["reason"] == "error: HTTP 500"  # status only — the key never lands on disk
+    # SteamClient raises a SteamError naming the status and endpoint but never
+    # the key (client.py's `_raise_for_status`) — this only checks the key
+    # never lands on disk, not the exact wording, which is the client's to own.
+    reason = logged[0]["reason"]
+    assert "500" in reason
+    assert "key=" not in reason
     assert "secret" not in skip_log.read_text()
 
 
