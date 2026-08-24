@@ -292,6 +292,19 @@ def upsert_game_profile(
         )
 
 
+def outside_pool_app_ids(conn: sqlite3.Connection) -> set[int]:
+    """Every game in the curated outside pool (Goal 5.1) — the discovery
+    direction's candidate scope (recommend/, Phase 6). Read from
+    `game_profiles` rather than `pipeline.outside_pool` directly, so the live
+    app depends only on the store and never imports from `pipeline/`
+    (CLAUDE.md: the live app only reads reference data; the two halves of the
+    project stay separate)."""
+    rows = conn.execute(
+        "SELECT app_id FROM game_profiles WHERE in_outside_pool = 1"
+    ).fetchall()
+    return {r["app_id"] for r in rows}
+
+
 def get_game_profile(conn: sqlite3.Connection, app_id: int) -> dict | None:
     """Return a game profile with its provenance under a `provenance` key."""
     row = conn.execute(
