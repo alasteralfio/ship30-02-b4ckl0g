@@ -103,6 +103,27 @@ def test_playtimes_replace_is_idempotent(conn):
     assert store.get_seed_playtimes(conn, "abc") == {440: 1500}
 
 
+def test_distinct_seed_app_ids_spans_every_profile(conn):
+    for steam_id, playtimes in (("a", {440: 100, 570: 50}), ("b", {570: 30, 620: 10})):
+        store.upsert_seed_profile(
+            conn, steam_id, depth_breadth=0.0, completion_drive=0.0,
+            commitment_consistency=0.0, shape_features={}, crawled_at="2026-08-19T00:00:00Z",
+        )
+        store.replace_seed_playtimes(conn, steam_id, playtimes)
+    assert store.distinct_seed_app_ids(conn) == {440, 570, 620}
+
+
+def test_seed_minutes_for_app_pools_every_player(conn):
+    for steam_id, playtimes in (("a", {440: 100}), ("b", {440: 250}), ("c", {620: 10})):
+        store.upsert_seed_profile(
+            conn, steam_id, depth_breadth=0.0, completion_drive=0.0,
+            commitment_consistency=0.0, shape_features={}, crawled_at="2026-08-19T00:00:00Z",
+        )
+        store.replace_seed_playtimes(conn, steam_id, playtimes)
+    assert sorted(store.seed_minutes_for_app(conn, 440)) == [100, 250]
+    assert store.seed_minutes_for_app(conn, 999) == []  # nobody played it — no signal, not an error
+
+
 def test_game_profile_round_trip_with_provenance(conn):
     store.upsert_game_profile(
         conn,

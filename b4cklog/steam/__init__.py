@@ -7,6 +7,12 @@ from .client import (
     SteamError,
     UnknownSteamID,
 )
+from .gamedata import (
+    AchievementPercent,
+    AppDetails,
+    GameDataClient,
+    GameDataError,
+)
 from .models import (
     AchievementStats,
     Library,
@@ -23,6 +29,10 @@ __all__ = [
     "UnknownSteamID",
     "DEFAULT_ACHIEVEMENT_SAMPLE",
     "DEFAULT_CONCURRENCY",
+    "GameDataClient",
+    "GameDataError",
+    "AppDetails",
+    "AchievementPercent",
     "AchievementStats",
     "Library",
     "LibraryResult",

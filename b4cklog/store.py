@@ -196,6 +196,29 @@ def get_seed_playtimes(conn: sqlite3.Connection, steam_id: str) -> dict[int, int
     return {r["app_id"]: r["minutes_played"] for r in rows}
 
 
+def distinct_seed_app_ids(conn: sqlite3.Connection) -> set[int]:
+    """Every game any seed member has played. Game profiling (Phase 5) needs
+    this to know its scope: "every game in the seed libraries" (Goal 5.1)."""
+    rows = conn.execute("SELECT DISTINCT app_id FROM seed_profile_playtimes").fetchall()
+    return {r["app_id"] for r in rows}
+
+
+def seed_minutes_for_app(conn: sqlite3.Connection, app_id: int) -> list[int]:
+    """Every seed member's playtime in one game, unsorted.
+
+    The length estimate (Goal 5.2) reads a game's demands off how long the
+    seed itself actually spent in it — the SteamSpy-shaped proxy PROJECT.md
+    calls for since SteamSpy itself is blocked. Empty for a game nobody in the
+    seed has played (e.g. most of the curated outside pool), which the caller
+    must treat as "no length signal" rather than inventing one.
+    """
+    rows = conn.execute(
+        "SELECT minutes_played FROM seed_profile_playtimes WHERE app_id = ?",
+        (app_id,),
+    ).fetchall()
+    return [r["minutes_played"] for r in rows]
+
+
 # --- Game profiles (written by pipeline/, read by app + pipeline) ---
 
 def upsert_game_profile(
