@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}No such account — B4CKL0G{% endblock %}
+{% block content %}
+  <h2>No account matches "{{ steam_id }}"</h2>
+  <p>Steam has no profile at that ID. Double-check it and try again — a
+  SteamID64 is the long all-digits number, not the vanity name in your
+  profile URL.</p>
+  <p><a href="/">Try another profile</a></p>
+{% endblock %}

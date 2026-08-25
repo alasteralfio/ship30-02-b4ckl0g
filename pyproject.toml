@@ -34,5 +34,8 @@ packages = [
     "pipeline",
 ]
 
+[tool.setuptools.package-data]
+"b4cklog.web" = ["templates/*.html"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

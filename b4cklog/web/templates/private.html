@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Can't read this profile — B4CKL0G{% endblock %}
+{% block content %}
+  <h2>Can't read {{ result.persona_name or result.steam_id }}</h2>
+  {% if result.reason.value == "profile_private" %}
+    <p>This Steam profile is private. B4CKL0G only reads public profiles — there's
+    nothing here to guess around.</p>
+  {% else %}
+    <p>This profile is public, but its game details are hidden. Playtime and
+    library visibility are separate settings on Steam, and this account has the
+    second one turned off.</p>
+  {% endif %}
+  <p class="subtle">Making a profile public: Steam &rarr; Edit Profile &rarr;
+  Privacy Settings &rarr; set "My profile" and "Game details" to Public.</p>
+  <p><a href="/">Try another profile</a></p>
+{% endblock %}

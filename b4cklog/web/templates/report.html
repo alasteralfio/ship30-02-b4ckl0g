@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ report.persona_name or report.steam_id }} — B4CKL0G{% endblock %}
+{% block content %}
+  <h2>{{ report.persona_name or report.steam_id }}</h2>
+
+  {% if report.low_confidence %}
+  <div class="banner">
+    Only {{ report.games_played }} game{{ "" if report.games_played == 1 else "s" }} played so far —
+    this read is a best guess from very little, not a confident one.
+  </div>
+  {% endif %}
+
+  <p>{{ report.placement.soft_label }}</p>
+  {% if report.placement.subdivision %}
+    <p class="subtle">
+      {{ report.placement.subdivision.name }}{% if not report.placement.subdivision.confident %} (not confident yet){% endif %}
+      &mdash; {{ report.placement.subdivision.detail }}
+    </p>
+  {% endif %}
+
+  <div class="placement-picture">{{ svg | safe }}</div>
+
+  <h2>From your backlog</h2>
+  {% if report.recommendations.backlog_note %}
+    <p class="subtle">{{ report.recommendations.backlog_note }}</p>
+  {% endif %}
+  {% if report.recommendations.backlog %}
+  <ul class="rec-list">
+    {% for rec in report.recommendations.backlog %}
+    <li class="rec">
+      <div class="rec-head">
+        <span class="rec-name">{{ rec.name or rec.app_id }}</span>
+        <span class="rec-score">{{ "%.0f"|format(rec.score * 100) }}% fit</span>
+      </div>
+      {% if rec.hours_to_complete %}
+        <div class="rec-detail">around {{ "%.0f"|format(rec.hours_to_complete) }}h estimated to fully complete</div>
+      {% endif %}
+      {% if rec.property_coverage < 0.5 %}
+        <div class="rec-detail">thin data on this one &mdash; take the fit loosely</div>
+      {% endif %}
+      {% if rec.caveat %}
+        <div class="caveat">{{ rec.caveat }}</div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <h2>Beyond your library</h2>
+  {% if report.recommendations.outside %}
+  <ul class="rec-list">
+    {% for rec in report.recommendations.outside %}
+    <li class="rec">
+      <div class="rec-head">
+        <span class="rec-name">{{ rec.name or rec.app_id }}</span>
+        <span class="rec-score">{{ "%.0f"|format(rec.score * 100) }}% fit</span>
+      </div>
+      {% if rec.hours_to_complete %}
+        <div class="rec-detail">around {{ "%.0f"|format(rec.hours_to_complete) }}h estimated to fully complete</div>
+      {% endif %}
+      {% if rec.property_coverage < 0.5 %}
+        <div class="rec-detail">thin data on this one &mdash; take the fit loosely</div>
+      {% endif %}
+      {% if rec.caveat %}
+        <div class="caveat">{{ rec.caveat }}</div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+    <p class="subtle">You already own everything in our discovery pool &mdash; nothing new to surface here.</p>
+  {% endif %}
+
+  <p class="subtle">
+    {{ "%.0f"|format(report.recommendations.blend_weight * 100) }}% of each score above leans on
+    {{ report.recommendations.neighbor_count }} behaviourally similar player{{ "" if report.recommendations.neighbor_count == 1 else "s" }}
+    found nearby; the rest comes straight from what each game asks of a player like you.
+  </p>
+
+  <p><a href="/">Look up another profile</a></p>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+  <p>Enter a public Steam profile to see how you actually play — depth versus
+  breadth, completion drive, commitment consistency — and get backlog and
+  discovery picks that fit it.</p>
+  <form action="/profile" method="get">
+    <input type="text" name="steam_id" placeholder="Your SteamID64" required>
+    <button type="submit">Read my profile</button>
+  </form>
+  <p class="subtle">Your profile needs to be public. Nothing you look up is stored.</p>
+{% endblock %}

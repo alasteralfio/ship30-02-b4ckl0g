@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Nothing to read yet — B4CKL0G{% endblock %}
+{% block content %}
+  <h2>{{ report.persona_name or report.steam_id }}</h2>
+  <p>This profile is public and readable, but none of its {{ report.games_owned }}
+  owned game{{ "" if report.games_owned == 1 else "s" }} has any playtime logged.
+  There's no behaviour here yet to read a playstyle from — B4CKL0G isn't going
+  to guess one.</p>
+  <p class="subtle">Come back once a few games have some hours in them.</p>
+  <p><a href="/">Try another profile</a></p>
+{% endblock %}
